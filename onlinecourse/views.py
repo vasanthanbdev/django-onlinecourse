@@ -64,7 +64,7 @@ def check_if_enrolled(user, course):
     is_enrolled = False
     if user.id is not None:
         # Check if user enrolled
-        num_results = Enrollment.objects.filter(user=user, course=course).count()
+        num_results = Enrollment.objects.filter(learner=user.learner, course=course).count()
         if num_results > 0:
             is_enrolled = True
     return is_enrolled
@@ -80,7 +80,7 @@ class CourseListView(generic.ListView):
         courses = Course.objects.order_by('-total_enrollment')[:10]
         for course in courses:
             if user.is_authenticated:
-                course.is_enrolled = check_if_enrolled(user, course)
+                course.is_enrolled = check_if_enrolled(user.learner, course)
         return courses
 
 
@@ -92,11 +92,12 @@ class CourseDetailView(generic.DetailView):
 def enroll(request, course_id):
     course = get_object_or_404(Course, pk=course_id)
     user = request.user
+    learner = user.learner
 
-    is_enrolled = check_if_enrolled(user, course)
+    is_enrolled = check_if_enrolled(learner, course)
     if not is_enrolled and user.is_authenticated:
         # Create an enrollment
-        Enrollment.objects.create(user=user, course=course, mode='honor')
+        Enrollment.objects.create(learner=learner, course=course, mode='honor')
         course.total_enrollment += 1
         course.save()
 

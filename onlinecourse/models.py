@@ -59,7 +59,7 @@ class Course(models.Model):
     description = models.CharField(max_length=1000)
     pub_date = models.DateField(null=True)
     instructors = models.ManyToManyField(Instructor)
-    users = models.ManyToManyField(settings.AUTH_USER_MODEL, through='Enrollment')
+    learners = models.ManyToManyField(Learner, through='Enrollment')
     total_enrollment = models.IntegerField(default=0)
     is_enrolled = False
 
@@ -97,16 +97,30 @@ class Enrollment(models.Model):
 
 # Question Model
 class Question(models.Model):
-    lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE)
-    question_text = models.TextField()
-    grade = models.PositiveIntegerField()
+    course = models.ForeignKey(Course, on_delete=models.CASCADE)
+    content = models.CharField(max_length=200)
+    grade = models.IntegerField(default=50)
+
+    def __str__(self):
+        return "Question: " + self.content
+    
+    # method to calculate if the learner gets the score of the question
+    def is_get_score(self, selected_ids):
+        all_answers = self.choices.filter(is_correct=True).count()
+        selected_correct = self.choices.filter(is_correct=True, id__in=selected_ids).count()
+        if all_answers == selected_correct:
+            return True
+        else:
+            return False
+    
+    
     
 
 # Choice Model
 class Choice(models.Model):
-    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name="choices")
     choice_text = models.TextField()
-    is_correct = models.BooleanField()
+    is_correct = models.BooleanField(default=False)
         
 
 
