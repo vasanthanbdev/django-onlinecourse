@@ -77,8 +77,6 @@ class Lesson(models.Model):
 
 
 # Enrollment model
-# <HINT> Once a user enrolled a class, an enrollment entry should be created between the user and course
-# And we could use the enrollment to track information such as exam submissions
 class Enrollment(models.Model):
     AUDIT = 'audit'
     HONOR = 'honor'
@@ -112,9 +110,7 @@ class Question(models.Model):
             return True
         else:
             return False
-    
-    
-    
+        
 
 # Choice Model
 class Choice(models.Model):
@@ -122,11 +118,8 @@ class Choice(models.Model):
     choice_text = models.TextField()
     is_correct = models.BooleanField(default=False)
         
-
-
-# One enrollment could have multiple submission
-# One submission could have multiple choices
-# One choice could belong to multiple submissions
+        
+# Submission Model
 class Submission(models.Model):
     enrollment = models.ForeignKey(Enrollment, on_delete=models.CASCADE)
     choices = models.ManyToManyField(Choice)
