@@ -117,6 +117,7 @@ def extract_answers(request):
            submitted_anwsers.append(choice_id)
    return submitted_anwsers
 
+
 # submission view
 def submit(request, course_id):
     learner = request.user.learner
@@ -126,6 +127,7 @@ def submit(request, course_id):
     choices = extract_answers(request)
     submission.choices.set(choices)
     return HttpResponseRedirect(reverse(viewname='onlinecourse:exam_result', args=(course_id, submission.id,)))
+
 
 # Exam results view
 def show_exam_result(request, course_id, submission_id):
