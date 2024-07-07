@@ -12,10 +12,7 @@ import uuid
 
 # Instructor model
 class Instructor(models.Model):
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-    )
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     full_time = models.BooleanField(default=True)
     total_learners = models.IntegerField()
 
@@ -23,33 +20,26 @@ class Instructor(models.Model):
         return self.user.username
 
 
+STUDENT = 'student'
+DEVELOPER = 'developer'
+DATA_SCIENTIST = 'data_scientist'
+DATABASE_ADMIN = 'dba'
+OCCUPATION_CHOICES = [
+    (STUDENT, 'Student'),
+    (DEVELOPER, 'Developer'),
+    (DATA_SCIENTIST, 'Data Scientist'),
+    (DATABASE_ADMIN, 'Database Admin')
+]
+
+
 # Learner model
 class Learner(models.Model):
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-    )
-    STUDENT = 'student'
-    DEVELOPER = 'developer'
-    DATA_SCIENTIST = 'data_scientist'
-    DATABASE_ADMIN = 'dba'
-    OCCUPATION_CHOICES = [
-        (STUDENT, 'Student'),
-        (DEVELOPER, 'Developer'),
-        (DATA_SCIENTIST, 'Data Scientist'),
-        (DATABASE_ADMIN, 'Database Admin')
-    ]
-    occupation = models.CharField(
-        null=False,
-        max_length=20,
-        choices=OCCUPATION_CHOICES,
-        default=STUDENT
-    )
-    social_link = models.URLField(max_length=200)
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE) 
+    occupation = models.CharField(null=False, max_length=20, choices=OCCUPATION_CHOICES, default=STUDENT)
+    social_link = models.URLField(max_length=200, null=True)
 
     def __str__(self):
-        return self.user.username + "," + \
-               self.occupation
+        return self.user.username + " " + self.occupation
 
 
 # Course model
@@ -72,22 +62,23 @@ class Course(models.Model):
 class Lesson(models.Model):
     title = models.CharField(max_length=200, default="title")
     order = models.IntegerField(default=0)
-    course = models.ForeignKey(Course, on_delete=models.CASCADE)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name="lesson")
     content = models.TextField()
 
 
+AUDIT = 'audit'
+HONOR = 'honor'
+BETA = 'BETA'
+COURSE_MODES = [
+    (AUDIT, 'Audit'),
+    (HONOR, 'Honor'),
+    (BETA, 'BETA')
+]
+
 # Enrollment model
 class Enrollment(models.Model):
-    AUDIT = 'audit'
-    HONOR = 'honor'
-    BETA = 'BETA'
-    COURSE_MODES = [
-        (AUDIT, 'Audit'),
-        (HONOR, 'Honor'),
-        (BETA, 'BETA')
-    ]
-    learner = models.ForeignKey(Learner, on_delete=models.CASCADE)
-    course = models.ForeignKey(Course, on_delete=models.CASCADE)
+    learner = models.ForeignKey(Learner, on_delete=models.CASCADE, related_name="enrollment")
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name="enrollment")
     date_enrolled = models.DateField(default=now)
     mode = models.CharField(max_length=5, choices=COURSE_MODES, default=AUDIT)
     rating = models.FloatField(default=5.0)
@@ -95,7 +86,7 @@ class Enrollment(models.Model):
 
 # Question Model
 class Question(models.Model):
-    Lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE)
+    Lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, related_name="question")
     content = models.CharField(max_length=200)
     grade = models.IntegerField(default=50)
 
@@ -115,11 +106,11 @@ class Question(models.Model):
 # Choice Model
 class Choice(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name="choices")
-    choice_text = models.TextField()
+    content = models.TextField()
     is_correct = models.BooleanField(default=False)
         
         
 # Submission Model
 class Submission(models.Model):
-    enrollment = models.ForeignKey(Enrollment, on_delete=models.CASCADE)
+    enrollment = models.ForeignKey(Enrollment, on_delete=models.CASCADE, related_name="submission")
     choices = models.ManyToManyField(Choice)

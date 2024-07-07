@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.http import HttpResponseRedirect
-from .models import Course, Enrollment, Question, Submission, Choice
+from .models import Course,Learner, Enrollment, Question, Submission, Choice
 from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404, render, redirect
 from django.urls import reverse
@@ -31,6 +31,7 @@ def registration_request(request):
         if not user_exist:
             user = User.objects.create_user(username=username, first_name=first_name, last_name=last_name,
                                             password=password)
+            learner = Learner.objects.create(user=user)
             login(request, user)
             return redirect("onlinecourse:index")
         else:
@@ -97,7 +98,7 @@ def enroll(request, course_id):
     user = request.user
     learner = user.learner
 
-    is_enrolled = check_if_enrolled(user, course)
+    is_enrolled = check_if_enrolled(learner, course)
     if not is_enrolled and user.is_authenticated:
         # Create an enrollment
         Enrollment.objects.create(learner=learner, course=course, mode='honor')
